@@ -1,0 +1,70 @@
+openapi: 3.0.3
+info:
+  title: Midas Finance Service
+  version: 0.1.0
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200': { description: OK }
+  /receivables:
+    get:
+      summary: List accounts receivable
+      responses:
+        '200': { description: OK }
+  /invoices:
+    post:
+      summary: Create invoice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [condominiumId, unitId, residentId, dueDate, lines]
+              properties:
+                condominiumId: { type: string, format: uuid }
+                unitId: { type: string, format: uuid }
+                residentId: { type: string, format: uuid }
+                dueDate: { type: string, format: date }
+                lines:
+                  type: array
+                  items:
+                    type: object
+                    required: [concept, amount]
+                    properties:
+                      concept: { type: string }
+                      amount: { type: number }
+      responses:
+        '201': { description: Created }
+  /payments:
+    post:
+      summary: Register payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [residentId, amount, receivedAt]
+              properties:
+                residentId: { type: string, format: uuid }
+                amount: { type: number }
+                receivedAt: { type: string, format: date-time }
+                reference: { type: string }
+                applications:
+                  type: array
+                  items:
+                    type: object
+                    required: [invoiceId, amount]
+                    properties:
+                      invoiceId: { type: string, format: uuid }
+                      amount: { type: number }
+      responses:
+        '201': { description: Created }
+  /receivables/aging:
+    get:
+      summary: Aging report
+      responses:
+        '200': { description: OK }

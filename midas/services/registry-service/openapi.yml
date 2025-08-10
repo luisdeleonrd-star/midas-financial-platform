@@ -1,0 +1,29 @@
+openapi: 3.0.3
+info:
+  title: Midas Registry Service
+  version: 0.1.0
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200': { description: OK }
+  /condominiums:
+    post:
+      summary: Create condominium
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, currency]
+              properties:
+                name: { type: string }
+                currency: { type: string }
+      responses:
+        '201': { description: Created }
+    get:
+      summary: List condominiums
+      responses:
+        '200': { description: OK }

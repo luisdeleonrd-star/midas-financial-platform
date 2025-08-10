@@ -5,6 +5,10 @@ import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { Pool } from 'pg';
+import swaggerUi from 'swagger-ui-express';
+import fs from 'fs';
+import path from 'path';
+import YAML from 'yaml';
 
 dotenv.config();
 
@@ -19,6 +23,11 @@ const JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY as string;
 const JWT_PUBLIC_KEY = process.env.JWT_PUBLIC_KEY as string;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1h';
 
+// Swagger
+const openapiPath = path.join(__dirname, '..', 'openapi.yml');
+const openapiDoc = YAML.parse(fs.readFileSync(openapiPath, 'utf8'));
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(openapiDoc));
+
 app.get('/health', async (_req, res) => {
   try {
     await pool.query('SELECT 1');
@@ -29,7 +38,6 @@ app.get('/health', async (_req, res) => {
 });
 
 app.get('/.well-known/jwks.json', (_req, res) => {
-  // For brevity, serve raw PEM public key in simple shape
   res.json({ keys: [{ kid: 'midas-default', kty: 'RSA', alg: 'RS256', use: 'sig', pem: JWT_PUBLIC_KEY }] });
 });
 

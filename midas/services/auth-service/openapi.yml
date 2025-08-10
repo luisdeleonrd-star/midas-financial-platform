@@ -1,0 +1,46 @@
+openapi: 3.0.3
+info:
+  title: Midas Auth Service
+  version: 0.1.0
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200': { description: OK }
+  /.well-known/jwks.json:
+    get:
+      summary: JWKS public key
+      responses:
+        '200': { description: OK }
+  /signup:
+    post:
+      summary: Register a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, minLength: 6 }
+                role: { type: string }
+      responses:
+        '201': { description: Created }
+  /login:
+    post:
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+      responses:
+        '200': { description: OK }
