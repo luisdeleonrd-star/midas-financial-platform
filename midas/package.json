@@ -1,0 +1,31 @@
+{
+  "name": "midas-monorepo",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Midas - Plataforma de Gestión Financiera para Condominios (monorepo)",
+  "workspaces": [
+    "apps/*",
+    "services/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=18.17.0",
+    "npm": ">=9.6.0"
+  },
+  "scripts": {
+    "build": "npm run -w @midas/api-gateway build && npm run -ws --if-present build",
+    "dev": "npm run -w @midas/api-gateway dev",
+    "lint": "npm run -ws --if-present lint",
+    "test": "npm run -ws --if-present test",
+    "format": "npm run -ws --if-present format",
+    "typecheck": "npm run -ws --if-present typecheck",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down -v"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/pg": "^8.11.6"
+  }
+}

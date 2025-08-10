@@ -1,0 +1,128 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: midas-postgres
+    environment:
+      POSTGRES_USER: midas
+      POSTGRES_PASSWORD: midas
+      POSTGRES_DB: midas
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U midas"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis/redis-stack:7.2.0-v14
+    container_name: midas-redis
+    ports:
+      - "6379:6379"
+      - "8001:8001" # RedisInsight
+    volumes:
+      - redisdata:/data
+
+  minio:
+    image: minio/minio:latest
+    container_name: midas-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: midas
+      MINIO_ROOT_PASSWORD: midasminio123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - miniodata:/data
+
+  api-gateway:
+    build: ./services/api-gateway
+    container_name: midas-api-gateway
+    env_file:
+      - ./services/api-gateway/.env.example
+    environment:
+      NODE_ENV: development
+      PORT: 8080
+      JWT_PUBLIC_KEY: "${JWT_PUBLIC_KEY}"
+    depends_on:
+      - auth-service
+    ports:
+      - "8080:8080"
+
+  auth-service:
+    build: ./services/auth-service
+    container_name: midas-auth-service
+    env_file:
+      - ./services/auth-service/.env.example
+    environment:
+      DATABASE_URL: postgres://midas:midas@postgres:5432/midas
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  registry-service:
+    build: ./services/registry-service
+    container_name: midas-registry-service
+    env_file:
+      - ./services/registry-service/.env.example
+    environment:
+      DATABASE_URL: postgres://midas:midas@postgres:5432/midas
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  finance-service:
+    build: ./services/finance-service
+    container_name: midas-finance-service
+    env_file:
+      - ./services/finance-service/.env.example
+    environment:
+      DATABASE_URL: postgres://midas:midas@postgres:5432/midas
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  billing-service:
+    build: ./services/billing-service
+    container_name: midas-billing-service
+    env_file:
+      - ./services/billing-service/.env.example
+    environment:
+      DATABASE_URL: postgres://midas:midas@postgres:5432/midas
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  messaging-service:
+    build: ./services/messaging-service
+    container_name: midas-messaging-service
+    env_file:
+      - ./services/messaging-service/.env.example
+    environment:
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      redis:
+        condition: service_started
+
+  reporting-service:
+    build: ./services/reporting-service
+    container_name: midas-reporting-service
+    env_file:
+      - ./services/reporting-service/.env.example
+    environment:
+      DATABASE_URL: postgres://midas:midas@postgres:5432/midas
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  redisdata:
+  miniodata:
